@@ -1,0 +1,29 @@
+{
+  "name": "tron-contracts",
+  "version": "1.0.2",
+  "description": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "lite-server",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate": "bash scripts/migrate.sh"
+  },
+  "originalAuthors": "truffle-box",
+  "authors": [
+    {
+      "name": "Wyatt Evans",
+      "email": "w.evans@tron.network"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "tronweb": "^2.5.6"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-shallow-deep-equal": "^1.4.6"
+  }
+}
