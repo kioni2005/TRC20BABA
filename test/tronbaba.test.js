@@ -5,6 +5,7 @@ require("chai")
 
 var Tronbaba = artifacts.require("./Tronbaba.sol");
 
+//Test for deploying TronBaba TRC-20 token and checking parameters
 contract("Tronbaba", ([owner, random, random2, random3]) => {
   let name = "Tronbaba";
   let symbol = "BABA";
@@ -12,23 +13,20 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
   let supply = 21000000000;
   let baba;
 
-  console.log("owner address:", owner);
-  console.log("random address:", random);
-
   beforeEach(async () => {
+    //Deploy a new token with each test
     baba = await Tronbaba.deployed();
   });
 
   describe("BABA:details", () => {
     it("should return correct token symbol", async () => {
       let _symbol = await baba.symbol();
-      //   console.log("symbol", _symbol);
       _symbol.should.be.equal(symbol, "incorrect symbol");
     });
 
     it("should return correct token decimals", async () => {
       let _decimals = await baba.decimals();
-      //   console.log("decimals", _decimals);
+
       _decimals
         .toString()
         .should.be.equal(String(decimals), "incorrect token decimals");
@@ -36,7 +34,8 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
 
     it("should return correct token decimals", async () => {
       let _totalSupply = await baba.totalSupply();
-      //   console.log("supply", _totalSupply);
+
+      //Supply is the uint amount including decimals
       _totalSupply
         .toString()
         .should.be.equal(
@@ -49,7 +48,7 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
   describe("BABA:balance", () => {
     it("should return correct balance for initial owner", async () => {
       let _balance = await baba.balanceOf(tronWeb.address.toHex(owner));
-      //   console.log("balance", _balance.toString());
+
       _balance
         .toString()
         .should.be.equal(
@@ -60,7 +59,7 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
 
     it("should return 0 for balance of random addrress", async () => {
       let _balance = await baba.balanceOf(tronWeb.address.toHex(random));
-      //   console.log("balance", _balance);
+
       _balance.toString().should.be.equal("0", "incorrect balance of owner");
     });
   });
@@ -116,9 +115,11 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
 
   describe("BABA:burn", () => {
     it("should be able to burn tokens from his balance", async () => {
+      //Get initial Balance of the address before burning
       let startBalance = await baba.balanceOf(owner);
       await baba.burn(100000).should.be.fulfilled;
 
+      //Check new Balance from address after burning
       let _balance = await baba.balanceOf(owner);
 
       // Check if new balance is supply - burnt amount
