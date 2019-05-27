@@ -6,9 +6,7 @@
     "test": "test"
   },
   "scripts": {
-    "dev": "lite-server",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "migrate": "bash scripts/migrate.sh"
+    "test": "tronbox compile && tronbox migrate --reset && tronbox test"
   },
   "originalAuthors": "truffle-box",
   "authors": [

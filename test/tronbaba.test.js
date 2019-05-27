@@ -10,7 +10,7 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
   let name = "Tronbaba";
   let symbol = "BABA";
   let decimals = 6;
-  let supply = 21000000000;
+  let supply = 27000000000;
   let baba;
 
   beforeEach(async () => {
@@ -32,7 +32,7 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
         .should.be.equal(String(decimals), "incorrect token decimals");
     });
 
-    it("should return correct token decimals", async () => {
+    it("should return correct token supply", async () => {
       let _totalSupply = await baba.totalSupply();
 
       //Supply is the uint amount including decimals
@@ -93,7 +93,7 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
       await baba.transferFrom(owner, random2, 100000, { from: random }).should
         .be.fulfilled;
 
-      let _balance = await baba.balanceOf(random2);
+      let _balance = await baba.balanceOf(tronWeb.address.toHex(random2));
 
       _balance
         .toString()
@@ -107,7 +107,7 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
       //random address transfers approve tokens from owner to random2
       await baba.transferFrom(owner, random3, 200000, { from: random });
 
-      let _balance = await baba.balanceOf(random3);
+      let _balance = await baba.balanceOf(tronWeb.address.toHex(random3));
 
       _balance.toString().should.be.equal("0", "balance changed");
     });

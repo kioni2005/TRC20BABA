@@ -1,7 +1,5 @@
 const tronWeb = require("./tronweb.js");
 
-// console.log(tronWeb);
-
 let tokenID = 1001801; //BABA
 let tokenID2 = 1000864; //BBT
 

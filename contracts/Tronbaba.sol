@@ -3,10 +3,10 @@ pragma solidity ^0.4.25;
 import './tokens/TRC20/TRC20Detailed.sol';
 
 /**
- * @title Tronbaba
+ * @title Tronbaba Token Contract
  * @dev Responsible for receiving the token's details at deployment
     and creating the token with the TRC20 token standard. BABA token
-    also has the burn feature, but minting
+    also has the burn feature, but not minting
  * @author @wafflemakr
  */
 
