@@ -18,23 +18,24 @@ options = {
 };
 
 //working creating asset
-function createToken(to, pvky) {
-  tronWeb.transactionBuilder
-    .createToken(options, tronWeb.address.toHex(to))
-    .then(res => {
-      tronWeb.trx.sign(res, pvky).then(result => {
-        tronWeb.trx.sendRawTransaction(result).then(tx => {
-          if (tx.result) {
-            console.log("Token created successfully");
-          }
-        });
-      });
-    });
+async function createToken(to, pvky) {
+  let tx = await tronWeb.transactionBuilder.createToken(
+    options,
+    tronWeb.address.toHex(to)
+  );
+
+  let res = await tronWeb.trx.sign(tx, pvky);
+
+  tronWeb.trx.sendRawTransaction(res).then(tx => {
+    if (tx.result) {
+      console.log("Token created successfully");
+    }
+  });
 }
 
-//First call createToken (running both wont work)
-//createToken(process.env.FROM, process.env.PRIVATE_KEY);
-createToken(
-  "TJdDmJVYa9TcMJvCc9WsdaEXEYgeJrGVPq",
-  "86134c8a51446c21b501f3a05844e18fdb72d3a5420867737c8640ce0ec656ca"
-);
+process.env.NETWORK == 0
+  ? createToken(
+      "TJkrEHjJ11ydpoxXEo53u6ZnrRsfxxMHAV",
+      "cf0396e69230fc6a44f66b08fb7510d0f3895659bc94e854da92edf30a1ef331"
+    )
+  : createToken(process.env.FROM, process.env.PRIVATE_KEY);

@@ -15,10 +15,10 @@ if (process.env.NETWORK == 1) {
     process.env.PRIVATE_KEY
   );
 } else {
-  console.log("Running wth Tron Quickstart");
+  console.log("Running with Tron Quickstart");
   tronWeb = new TronWeb(
     { fullHost: "http://127.0.0.1:9090" },
-    "86134c8a51446c21b501f3a05844e18fdb72d3a5420867737c8640ce0ec656ca"
+    "cf0396e69230fc6a44f66b08fb7510d0f3895659bc94e854da92edf30a1ef331"
   );
 }
 
