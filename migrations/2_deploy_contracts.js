@@ -1,15 +1,13 @@
 TronWeb = require("tronweb");
 
+//This is only for converting address to Hex
 const tronWeb = new TronWeb(
-  "http://127.0.0.1:9090",
-  "http://127.0.0.1:9090",
-  "http://127.0.0.1:9090",
-  "da146374a75310b9666e834ee4ad0866d6f4035967bfc76217c5a495fff9f0d0"
+  { fullHost: "http://127.0.0.1:9090" },
+  "cf0396e69230fc6a44f66b08fb7510d0f3895659bc94e854da92edf30a1ef331"
 );
 
 var Tronbaba = artifacts.require("./Tronbaba.sol");
-
-let owner = "TH8sfWpYdTwuF2bt2gi5R3MvtVFLNiuNwP";
+let owner = "TJkrEHjJ11ydpoxXEo53u6ZnrRsfxxMHAV";
 
 module.exports = function(deployer) {
   deployer.deploy(
@@ -17,7 +15,7 @@ module.exports = function(deployer) {
     "Tronbaba",
     "BABA",
     6,
-    21000000000,
+    27000000000,
     tronWeb.address.toHex(owner)
   );
 };
