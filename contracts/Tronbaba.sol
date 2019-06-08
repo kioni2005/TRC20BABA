@@ -1,6 +1,9 @@
 pragma solidity ^0.4.25;
 
+import './tokens/TRC20/TRC20.sol';
 import './tokens/TRC20/TRC20Detailed.sol';
+import './tokens/TRC20/TRC20Burnable.sol';
+import './tokens/TRC20/TRC20Mintable.sol';
 
 /**
  * @title Tronbaba Token Contract
@@ -10,7 +13,7 @@ import './tokens/TRC20/TRC20Detailed.sol';
  * @author @wafflemakr
  */
 
-contract Tronbaba is TRC20Detailed{
+contract Tronbaba is TRC20, TRC20Detailed, TRC20Burnable, TRC20Mintable{
 
     /**
      * @notice Token Deployment
@@ -35,18 +38,6 @@ contract Tronbaba is TRC20Detailed{
         uint total = supply * (10 ** uint256(decimals));
 
         //Mint total supply of tokens to initial owner's address
-        _mint(initialOwner, total);
+        mint(initialOwner, total);
     }
-
-
-    /**
-     * @dev Burns a specific amount of tokens.
-     * @param value The amount of token to be burned
-        (must be greater than msg.sender 's balance)
-     */
-    function burn(uint256 value) public {
-        require(balanceOf(msg.sender) >= value, 'You do not own that amount of tokens');
-        _burn(msg.sender, value);
-    }
-
 }
