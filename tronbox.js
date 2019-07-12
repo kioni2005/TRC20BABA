@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 module.exports = {
   networks: {
     development: {
@@ -23,6 +25,17 @@ module.exports = {
       userFeePercentage: 100,
       fullHost: "https://api.trongrid.io",
       network_id: "1" // Match any network id
+    }
+  },
+  compilers: {
+    solc: {
+      version: "0.4.25",
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 200
+        }
+      }
     }
   }
 };
