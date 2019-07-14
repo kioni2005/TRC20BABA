@@ -3,7 +3,7 @@ require("chai")
   .use(require("chai-as-promised"))
   .should();
 
-var Tronbaba = artifacts.require("./Tronbaba.sol");
+var Baba = artifacts.require("./Baba.sol");
 
 //Test for deploying TronBaba TRC-20 token and checking parameters
 contract("Tronbaba", ([owner, random, random2, random3]) => {
@@ -14,8 +14,7 @@ contract("Tronbaba", ([owner, random, random2, random3]) => {
   let baba;
 
   beforeEach(async () => {
-    //Deploy a new token with each test
-    baba = await Tronbaba.deployed();
+    baba = await Baba.deployed();
   });
 
   describe("BABA:details", () => {

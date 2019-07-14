@@ -69,10 +69,13 @@ contract Market is Admin{
     }
 
     function openTrade
-        (uint tradeId, uint amountBaba, address seller, string currency) 
-        public onlyNewTrade(tradeId)
-    {
-        
+    (
+        uint tradeId, uint amountBaba, 
+        address seller, string currency
+    ) 
+        public 
+        onlyNewTrade(tradeId)
+    {        
         //Expect the token transfer from buyer to this contract to go through
         require(baba.transferFrom(msg.sender, address(this), amountBaba));
 
@@ -92,14 +95,20 @@ contract Market is Admin{
         //Once it receives 2 confirmations, funds will be released
         require(msg.sender == trades[tradeId].buyer || 
                 msg.sender == trades[tradeId].seller ||
-                msg.sender == owner);
+                isAdmin[msg.sender]);
         
         trades[tradeId].confirmations++;
 
         //If trade gets 2 or more confirmation, release escrow
         // buyer + seller, buyer + admin,  seller & admin, or all of them
-        if (trades[tradeId].confirmations >= 2) 
+        if (trades[tradeId].confirmations >= 2){
             baba.transfer(trades[tradeId].seller, trades[tradeId].tradeAmount);
+            trades[tradeId].released = true;
+        }
+    }
+
+    function getUsersTrades(address user) public view returns(uint[] memory){
+        return users[msg.sender].trades;
     }
 
     function getTotalEscrow() public view returns(uint){
