@@ -1,11 +1,46 @@
-var Baba = artifacts.require("./Baba.sol");
-var Market = artifacts.require("./Market.sol");
-// let owner = "412ce21916f8c790a66e16111dcfa0dd92e31f0efe"; //shasta
-// let owner = "416062cd0effc68730d8acade46618aabd06d8d992"; //quickstart
-let owner = 'TJkrEHjJ11ydpoxXEo53u6ZnrRsfxxMHAV'
+let Baba = artifacts.require("./Baba.sol");
+let Market = artifacts.require("./Market.sol");
+let Exchanger = artifacts.require("./Exchanger.sol");
 
-module.exports = function(deployer) {
-  deployer.deploy(Baba, "Tronbaba", "BABA", 6, 27000000000, owner).then(() => {
-    return deployer.deploy(Market, Baba.address);
-  });
+// let owner = "TDuFZiDThj87YJtbUjrp4y6W5KvcstBP3M";
+let owner = "TJkrEHjJ11ydpoxXEo53u6ZnrRsfxxMHAV"; //Quickstart
+
+module.exports = function(deployer, network, accounts) {
+  if (network === "shasta")
+    deployer
+      .deploy(Market, "TLD1ckq9cDDqgTNGFcWCDDbTA9i3C5C9qT", 1000030 /* trc10 */)
+      .then(() => {
+        deployer.deploy(
+          Exchanger,
+          Baba.address,
+          1000001 /* trc10 */,
+          Market.address
+        );
+      });
+  if (network === "production")
+    deployer
+      .deploy(Market, "TSRp9Y5H7ozyWQ4XUdVtRVfwXzegr9cF3x", 1001801 /* trc10 */)
+      .then(() => {
+        deployer.deploy(
+          Exchanger,
+          Baba.address,
+          1000001 /* trc10 */,
+          Market.address
+        );
+      });
+  else {
+    deployer
+      .deploy(Baba, "Tronbaba", "BABA", 6, 27000000000, owner)
+      .then(() => {
+        deployer.deploy(Market, Baba.address, 1000001 /* trc10 */);
+      })
+      .then(() => {
+        deployer.deploy(
+          Exchanger,
+          Baba.address,
+          1000001 /* trc10 */,
+          Market.address
+        );
+      });
+  }
 };

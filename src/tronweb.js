@@ -1,4 +1,5 @@
 const TronWeb = require("tronweb");
+const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 let tronWeb;

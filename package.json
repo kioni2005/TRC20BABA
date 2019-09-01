@@ -6,6 +6,7 @@
     "test": "test"
   },
   "scripts": {
+    "migrate": "tronbox compile && tronbox migrate --reset",
     "test": "tronbox compile && tronbox migrate --reset && tronbox test"
   },
   "originalAuthors": "truffle-box",

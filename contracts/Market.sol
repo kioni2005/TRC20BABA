@@ -11,8 +11,13 @@ import './Baba.sol';
 
 contract Market is Admin{
 
+    event NewUser(uint indexed userId, address indexed userAddress, uint registerDate);
+
     // TRC20 BABA Token Contract
-    Baba baba;
+    Baba public baba;
+
+    // TRC10 BABA token 
+    trcToken public trc10; 
 
     struct Trade{
         uint id;
@@ -38,15 +43,16 @@ contract Market is Admin{
 
     /**
      * @notice Token Deployment
-     * @param token address of baba token
-        the total supply when deploying the token
+     * @param tokenAddress address of TRC20 baba token
+     * @param tokenId token id of baba TRC10 token
      */
-    constructor(address token) public {
-        setTokenAddress(token);        
+    constructor(address tokenAddress, uint tokenId) public {
+        setTokenAddress(tokenAddress, tokenId);        
     }
 
-    function setTokenAddress(address _token) public onlyOwner{
-        baba = Baba(_token);
+    function setTokenAddress(address _tokenAddress, uint _tokenId) public onlyOwner{
+        baba = Baba(_tokenAddress);
+        trc10 = trcToken(_tokenId);
     }
 
     function registerUser(address user) public onlyOwner{
@@ -56,6 +62,16 @@ contract Market is Admin{
         uint[] memory array;
         User memory _user = User(totalUsers, true, array);
         users[user] = _user;
+        emit NewUser(totalUsers, user, now);
+    }
+
+    function isRegistered(address user) public view returns(bool){
+        return users[user].registered;
+    }
+
+    modifier onlyRegistered(){
+        require(isRegistered(msg.sender), "sender is not a registered user");
+        _;
     }
     
     modifier onlyNewTrade(uint _tradeId){
@@ -107,12 +123,29 @@ contract Market is Admin{
         }
     }
 
+    function depositBaba(uint amount) public{
+        require(baba.transferFrom(msg.sender, address(this), amount));
+    }
+
+    function migrateTokens() public payable onlyRegistered{
+        require(msg.tokenvalue > 0, "you must send a value greater than zero");
+        require(msg.tokenid == trc10, "invalid token id sent");
+        require(baba.balanceOf(address(this)) > msg.tokenvalue, "not enought balance for migration");
+        baba.transfer(msg.sender, msg.tokenvalue);
+    }
+
+    function getTrc10Balance(address account) public view returns(uint balance){
+       return account.tokenBalance(trc10);
+    }
+
     function getUsersTrades(address user) public view returns(uint[] memory){
-        return users[msg.sender].trades;
+        return users[user].trades;
     }
 
     function getTotalEscrow() public view returns(uint){
         return baba.balanceOf(address(this));
     }
+
+    function() public payable{}
 
 }
