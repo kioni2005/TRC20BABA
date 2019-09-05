@@ -71,6 +71,14 @@ contract Exchanger is Admin{
         trc20Balance = baba.balanceOf(address(this));
     }
 
+    function pauseSwap() public onlyOwner{
+        swapPaused = true;
+    }
+
+    function unPauseSwap() public onlyOwner{
+        swapPaused = false;
+    }
+
     function() public payable{}
 
     /**
