@@ -43,7 +43,7 @@ docker pull trontools/quickstart
 docker run -it --rm \
   -p 9090:9090 \
   -e "mnemonic=evoke album shoulder raven oyster keep marine office sunset supreme whip forest" \
-  -e "accounts=5" \
+  -e "accounts=7" \
   -e "defaultBalance=100000" \
   -e "showQueryString=true" \
   -e "showBody=true" \
@@ -54,7 +54,7 @@ docker run -it --rm \
 
 If you don't have docker, please install it first according to your OS: [Docker](https://docs.docker.com/install/)
 
-Make sure the docker run command creates 5 accounts and you can see the accounts and their private keys, each one with a 10.000 TRX balance. Press Ctrl + C and run the command again if you cannot see the accounts.
+Make sure the docker run command creates 7 accounts and you can see the accounts and their private keys, each one with a 10.000 TRX balance. Press Ctrl + C and run the command again if you cannot see the accounts.
 
 You can run the following command in a new terminal to retrieve the accounts and private keys from the running tron network:
 
@@ -64,10 +64,19 @@ curl http://127.0.0.1:9090/admin/accounts
 
 If you use a different mnemonic, you will need to update the private key in the tronbox.js file, under the "development" network, and the "2_deploy_contracts.js" file located in the migrations folder, replacing the private key and owner address.
 
-Next, in a different terminal, you will need to run the following command from the tron-contracts folder:
+Define an environmental file (.env) in the root folder, and copy:
 
 ```
-//Check that 11 tests pass
+NETWORK=0
+```
+
+Next, in a different terminal, you will need to run the following commands from the tron-contracts folder:
+
+```
+//create a TRC10 token in quickstart
+node src/createTRC10
+
+//Run tests
 npm run test
 
 ```
