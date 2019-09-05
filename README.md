@@ -1,6 +1,6 @@
-# BABA TRC-20 TOKEN
+# BABA SMART CONTRACTS
 
-Smart Contract for Tronbaba TRC20 Token BABA. Visit us at https://www.tronbaba.io/
+Smart Contracts for Tronbaba. Visit us at https://www.tronbaba.com/
 
 ## Tronbaba
 
@@ -16,9 +16,9 @@ Anyone who holds [TRC-10 BABA Token](https://tronscan.org/#/token/1001801) will 
 
 This migration will allow a better interaction with Tronbaba platorm using smart contracts.
 
-## Testing the token
+## Testing
 
-If you want to test our token, please clone this repository and do the following:
+If you want to run tests, please clone this repository and do the following:
 
 Install Tronbox
 
