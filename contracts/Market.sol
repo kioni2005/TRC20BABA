@@ -9,9 +9,17 @@ pragma solidity ^0.4.25;
 import './Admin.sol';
 import './Baba.sol';
 
+import "./utils/SafeMath.sol";
+
 contract Market is Admin{
 
+    using SafeMath for uint256;
+
     event NewUser(uint indexed userId, address indexed userAddress, uint registerDate);
+
+    event NewTrade(uint indexed tradeId, address indexed buyer, address indexed seller, uint amount);
+
+    event TradeReleased(uint indexed tradeId, address seller, uint amount, bool byAdmin);
 
     // TRC20 BABA Token Contract
     Baba public baba;
@@ -23,10 +31,12 @@ contract Market is Admin{
         uint id;
         address buyer;
         address seller;
+        address admin;
         uint tradeAmount;
         string currency;
         uint8 confirmations;
         bool released;
+        bool cancelled;
     }
 
     struct User{
@@ -41,16 +51,25 @@ contract Market is Admin{
 
     uint public totalUsers;
 
+    uint public babaFee = 2;
+
+    address public tronBabaWallet;
+
     /**
      * @notice Token Deployment
      * @param tokenAddress address of TRC20 baba token
      * @param tokenId token id of baba TRC10 token
      */
-    constructor(address tokenAddress, uint tokenId) public {
-        setTokenAddress(tokenAddress, tokenId);        
+    constructor(address tokenAddress, uint tokenId, address _tronBabaWallet) public {
+        setTokensAddress(tokenAddress, tokenId);
+        tronBabaWallet = _tronBabaWallet;        
     }
 
-    function setTokenAddress(address _tokenAddress, uint _tokenId) public onlyOwner{
+    function setBabaFee(uint _fee) public onlyOwner{
+        babaFee = _fee;
+    }
+
+    function setTokensAddress(address _tokenAddress, uint _tokenId) public onlyOwner{
         baba = Baba(_tokenAddress);
         trc10 = trcToken(_tokenId);
     }
@@ -79,15 +98,31 @@ contract Market is Admin{
         _;
     }
 
+    modifier onlyTradeAdmin(uint _tradeId){
+        require(msg.sender == trades[_tradeId].admin, "you are not the admin of this trade");
+        _;
+    }
+
     modifier onlyExistingTrade(uint _tradeId){
-        require(trades[_tradeId].id != 0);
+        require(trades[_tradeId].id != 0, "trade does not exist");
+        _;
+    }
+
+    modifier notReleased(uint _tradeId){
+        require(!trades[_tradeId].released, "trade was released");
+        _;
+    }
+
+    modifier notCancelled(uint _tradeId){
+        require(!trades[_tradeId].cancelled, "trade was cancelled");
         _;
     }
 
     function openTrade
     (
         uint tradeId, uint amountBaba, 
-        address seller, string currency
+        address seller, string currency,
+        address admin
     ) 
         public 
         onlyNewTrade(tradeId)
@@ -96,42 +131,50 @@ contract Market is Admin{
         require(baba.transferFrom(msg.sender, address(this), amountBaba));
 
         //Create the trade
-        Trade memory _trade = Trade(tradeId, msg.sender, seller, amountBaba, currency, 0, false);
+        Trade memory _trade = Trade(tradeId, msg.sender, seller, admin, amountBaba, currency, 0, false, false);
 
         //Add the trade to the user trades array
         users[msg.sender].trades.push(tradeId);
         trades[tradeId] = _trade;
 
+        emit NewTrade(tradeId, msg.sender, seller, amountBaba);
+
     }
 
-    function confirmTrade(uint tradeId) public onlyExistingTrade(tradeId){
-        //Check that the trade has not been released yet
-        require(!trades[tradeId].released);
+    function confirmTrade(uint tradeId) 
+        public 
+        onlyExistingTrade(tradeId)
+        notReleased(tradeId)
+    {
         //Only 3 addresses can interact to confirm a trade
         //Once it receives 2 confirmations, funds will be released
         require(msg.sender == trades[tradeId].buyer || 
                 msg.sender == trades[tradeId].seller ||
-                isAdmin[msg.sender]);
+                msg.sender == trades[tradeId].admin);
         
         trades[tradeId].confirmations++;
 
         //If trade gets 2 or more confirmation, release escrow
         // buyer + seller, buyer + admin,  seller & admin, or all of them
-        if (trades[tradeId].confirmations >= 2){
-            baba.transfer(trades[tradeId].seller, trades[tradeId].tradeAmount);
+        if (trades[tradeId].confirmations == 2){
+            uint tronBabaFee = trades[tradeId].tradeAmount.mul(babaFee).div(100);
+            baba.transfer(trades[tradeId].seller, trades[tradeId].tradeAmount.sub(tronBabaFee));
+            baba.transfer(tronBabaWallet, tronBabaFee);
             trades[tradeId].released = true;
+
+            bool byAdmin = (msg.sender == trades[tradeId].admin);
+
+            emit TradeReleased(tradeId, trades[tradeId].seller, trades[tradeId].tradeAmount.sub(tronBabaFee), byAdmin);
         }
     }
 
-    function depositBaba(uint amount) public{
-        require(baba.transferFrom(msg.sender, address(this), amount));
-    }
-
-    function migrateTokens() public payable onlyRegistered{
-        require(msg.tokenvalue > 0, "you must send a value greater than zero");
-        require(msg.tokenid == trc10, "invalid token id sent");
-        require(baba.balanceOf(address(this)) > msg.tokenvalue, "not enought balance for migration");
-        baba.transfer(msg.sender, msg.tokenvalue);
+    function cancelTrade(uint tradeId) 
+        public 
+        onlyTradeAdmin(tradeId)
+        notReleased(tradeId)
+    {        
+        baba.transfer(trades[tradeId].buyer, trades[tradeId].tradeAmount);
+        trades[tradeId].cancelled = true;
     }
 
     function getTrc10Balance(address account) public view returns(uint balance){
@@ -142,7 +185,7 @@ contract Market is Admin{
         return users[user].trades;
     }
 
-    function getTotalEscrow() public view returns(uint){
+    function getEscrowTotal() public view returns(uint){
         return baba.balanceOf(address(this));
     }
 

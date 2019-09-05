@@ -3,7 +3,6 @@ require("chai")
   .use(require("chai-as-promised"))
   .should();
 
-let Market = artifacts.require("./Market.sol");
 let Baba = artifacts.require("./Baba.sol");
 let Exchanger = artifacts.require("./Exchanger.sol");
 
@@ -14,7 +13,6 @@ contract("Market", ([owner, user1, user2, random, admin]) => {
   beforeEach(async () => {
     baba = await Baba.deployed();
     exchanger = await Exchanger.deployed();
-    market = await Market.deployed();
   });
 
   describe("Token Migration", () => {
@@ -32,31 +30,14 @@ contract("Market", ([owner, user1, user2, random, admin]) => {
       console.log("TRC20 BABA:", balance.trc20Balance.toString());
     });
 
-    it.skip("user must be registered before migrating", async () => {
-      await exchanger.migrateTokens({
-        from: owner,
-        tokenValue: 10,
-        tokenId: 1000001,
-        shouldPollResponse: true
-      }).should.be.rejected;
-    });
-
     it("user can migrate tokens", async () => {
       let balance = await baba.balanceOf(owner);
-      console.log("\nCurrent user Balance:", balance.toString());
-
-      await market.registerUser(owner, {
-        from: owner,
-        shouldPollResponse: false
-      }).should.be.fulfilled;
+      console.log("\nCurrent user Balance:", balance.toString(), "TRC10");
 
       let balance1 = await exchanger.getContractBalances();
       console.log("\nContract Balances:");
       console.log("TRC10 BABA:", balance1.trc10Balance.toString());
       console.log("TRC20 BABA:", balance1.trc20Balance.toString());
-
-      // let allowance = await baba.allowance(owner, exchanger.address);
-      // console.log(allowance.toString());
 
       await exchanger.migrateTokens({
         from: owner,
@@ -66,7 +47,7 @@ contract("Market", ([owner, user1, user2, random, admin]) => {
       });
 
       let newBalance = await baba.balanceOf(owner);
-      console.log("\nNew user Balance:", newBalance.toString());
+      console.log("\nNew user Balance:", newBalance.toString(), "TRC10");
 
       let balance2 = await exchanger.getContractBalances();
       console.log("\nContract Balances:");

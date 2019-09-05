@@ -7,7 +7,7 @@ let Market = artifacts.require("./Market.sol");
 let Baba = artifacts.require("./Baba.sol");
 
 //Test for Tronbaba market escrow contract
-contract("Market", ([owner, user1, user2, random, admin]) => {
+contract("Market", ([owner, user1, user2, random, admin, tradeAdmin]) => {
   let baba, market;
 
   beforeEach(async () => {
@@ -50,14 +50,16 @@ contract("Market", ([owner, user1, user2, random, admin]) => {
     });
 
     it("user cannot open trade without approving market contract first", async () => {
-      await market.openTrade(123, 1000, user2, "USD", { from: user1 });
+      await market.openTrade(123, 1000, user2, "USD", tradeAdmin, {
+        from: user1
+      });
       let trade = await market.trades(123);
       tronWeb.address.fromHex(trade.seller).should.not.be.equal(user2);
     });
 
     it("user can open trade correctly", async () => {
       await baba.approve(market.address, 1000, { from: user1 });
-      await market.openTrade(123, 1000, user2, "USD", {
+      await market.openTrade(123, 1000, user2, "USD", tradeAdmin, {
         from: user1
       });
       let trade = await market.trades(123);
@@ -78,19 +80,22 @@ contract("Market", ([owner, user1, user2, random, admin]) => {
       //Buyer confirms trade (products arrived)
       await market.confirmTrade(123, { from: user1 });
       let trade = await market.trades(123);
+
       //Should show 2 confirmations (buyer + seller)
       trade.confirmations.should.be.equal(2);
       let balance = await baba.balanceOf(user1);
+
       // Buyers balance is decreased by trade amount
       balance.toString().should.be.equal("9000");
-      //Funds are sent from escrow to seller
+
+      //Funds are sent from escrow to seller (minus baba fee of 2%)
       balance = await baba.balanceOf(user2);
-      balance.toString().should.be.equal("11000");
+      balance.toNumber().should.be.equal(10000 + 1000 * 0.98);
     });
 
     it("escrow can be released by admin when there is conflict", async () => {
       await baba.approve(market.address, 2500, { from: user2 });
-      await market.openTrade(124, 2500, user1, "GBP", {
+      await market.openTrade(124, 2500, user1, "GBP", tradeAdmin, {
         from: user2
       });
       //Seller confirms trade (send products)
@@ -101,16 +106,17 @@ contract("Market", ([owner, user1, user2, random, admin]) => {
       // Buyer says products never arrived
       // Admin steps in and find that the order did arrived
       // Admin releases funds
-      await market.confirmTrade(124, { from: admin });
+      await market.confirmTrade(124, { from: tradeAdmin });
       trade = await market.trades(124);
       trade.confirmations.should.be.equal(2);
 
-      let balance = await baba.balanceOf(user1);
+      let balance = await baba.balanceOf(user2);
       // Buyers balance is decreased by trade amount
-      balance.toString().should.be.equal("11500");
+      balance.toNumber().should.be.equal(10980 - 2500);
+
       //Funds are sent from escrow to seller
-      balance = await baba.balanceOf(user2);
-      balance.toString().should.be.equal("8500");
+      balance = await baba.balanceOf(user1);
+      balance.toNumber().should.be.equal(9000 + 2500 * 0.98);
     });
   });
 });

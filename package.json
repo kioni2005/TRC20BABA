@@ -7,7 +7,8 @@
   },
   "scripts": {
     "migrate": "tronbox compile && tronbox migrate --reset",
-    "test": "tronbox compile && tronbox migrate --reset && tronbox test"
+    "test": "tronbox compile && tronbox migrate --reset && tronbox test",
+    "create": "node ./src/createTRC10"
   },
   "originalAuthors": "truffle-box",
   "authors": [

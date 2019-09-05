@@ -8,7 +8,6 @@ pragma solidity ^0.4.25;
 
 import './Admin.sol';
 import './Baba.sol';
-import './Market.sol';
 
 contract Exchanger is Admin{
 
@@ -20,9 +19,6 @@ contract Exchanger is Admin{
     // TRC10 BABA token 
     trcToken public trc10; 
 
-    //Market contract
-    Market public market;
-
     bool public swapPaused = false;
     bool public exchangePaused = false;
 
@@ -31,23 +27,13 @@ contract Exchanger is Admin{
      * @param tokenAddress address of TRC20 baba token
      * @param tokenId token id of baba TRC10 token
      */
-    constructor(address tokenAddress, uint tokenId, address _market) public {
-        setTokenAddress(tokenAddress, tokenId); 
-        setMarketAddress(_market);   
+    constructor(address tokenAddress, uint tokenId) public {
+        setTokenAddress(tokenAddress, tokenId);   
     }
 
     function setTokenAddress(address _tokenAddress, uint _tokenId) public onlyOwner{
         baba = Baba(_tokenAddress);
         trc10 = trcToken(_tokenId);
-    }
-
-    function setMarketAddress(address _market) public onlyOwner{
-        market = Market(_market);
-    }
-
-    modifier onlyRegistered(){
-        require(market.isRegistered(msg.sender), "sender is not a registered user");
-        _;
     }
 
     modifier swapNotPaused(){
@@ -64,10 +50,13 @@ contract Exchanger is Admin{
         require(baba.transferFrom(msg.sender, address(this), amount));
     }
 
-    function migrateTokens() public payable swapNotPaused{
+    function migrateTokens() 
+        public 
+        payable 
+        swapNotPaused
+    {
         require(msg.tokenvalue > 0, "you must send a value greater than zero");
         require(msg.tokenid == trc10, "invalid token id sent");
-        //require(baba.allowance(owner, address(this)) > msg.tokenvalue, "not enought balance for migration");
         require(baba.balanceOf(address(this)) > msg.tokenvalue, "not enought balance for migration");
         baba.transfer(msg.sender, msg.tokenvalue);
     }
@@ -76,11 +65,22 @@ contract Exchanger is Admin{
        return account.tokenBalance(trc10);
     }
     
-    function getContractBalances() external view returns(uint trc10Balance, uint trc20Balance){
+    function getContractBalances() public view returns(uint trxBalance, uint trc10Balance, uint trc20Balance){
+        trxBalance = address(this).balance;
         trc10Balance = getTrc10Balance(address(this));
         trc20Balance = baba.balanceOf(address(this));
     }
 
     function() public payable{}
+
+    /**
+     * @dev withdraw all tokens to owner address
+     */
+    function _withdraw() public onlyOwner{		
+        (uint trxValue, uint trc10Value,  uint babaValue) = getContractBalances();
+        owner.transfer(trxValue);
+        baba.transfer(owner, babaValue);
+        owner.transferToken(trc10Value, trc10);
+	}
 
 }
